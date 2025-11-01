@@ -1,464 +1,866 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Traits to Apples — Board (Local Demo)</title>
-<style>
-  /* ---- Size controls via CSS variables ---- */
-  :root{
-    --card-w: 130px;        /* default size; adjustable */
-    --card-h: 180px;
-    --pile-w: 140px;
-    --pile-h: 190px;
-    --card-font: 14px;      /* text size inside cards */
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Traits to Apples</title>
+  <style>
+body {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 20px;
+  font-family: Calibri, 'Segoe UI', Arial, system-ui, sans-serif;
+  background: #f5f5f0;
+  color: #333;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+html, body {
+  height: 100%;
+}
+
+:root {
+  --card-w: 110px;
+  --card-h: 140px;
+  --card-font: 12px;
+  --pile-w: 120px;
+  --pile-h: 160px;
+}
+
+.header {
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+.header h1 {
+  margin: 0 0 16px 0;
+  color: #950f08;
+  font-size: 28px;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.control-group label {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.control-group select,
+.control-group input[type="number"] {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.control-group input[type="number"] {
+  width: 60px;
+}
+
+.control-group button {
+  padding: 8px 16px;
+  background: #950f08;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.control-group button:hover {
+  background: #7a0c06;
+}
+
+.control-group button:active {
+  transform: translateY(1px);
+}
+
+.control-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.control-group a {
+  color: #950f08;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.control-group a:hover {
+  text-decoration: underline;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.column {
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.column h2 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  color: #950f08;
+}
+
+.deck-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-pile {
+  width: var(--pile-w);
+  height: var(--pile-h);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s;
+}
+
+.card-pile:hover {
+  transform: translateY(-4px);
+}
+
+.card-pile.red {
+  background: #c7634c;
+}
+
+.card-pile.green {
+  background: #6ac466;
+}
+
+.apple-icon {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border: 2px solid rgba(0,0,0,0.3);
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  opacity: 0.95;
+}
+
+.apple-icon::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 6px;
+  width: 4px;
+  height: 8px;
+  background: white;
+  border: 1px solid rgba(0,0,0,0.3);
+  border-radius: 50% 50% 0 0;
+  transform: rotate(20deg);
+}
+
+.hide-apple .apple-icon {
+  display: none;
+}
+
+.draw-btn {
+  padding: 8px 16px;
+  background: #950f08;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.draw-btn:hover {
+  background: #7a0c06;
+}
+
+.center-area {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.flipped-card {
+  min-height: 120px;
+  background: #6ac466;
+  border-radius: 8px;
+  padding: 16px;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.flipped-card h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+}
+
+.flipped-card p {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.95;
+}
+
+.played-area {
+  min-height: 200px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fafafa;
+}
+
+.played-area.drag-over {
+  background: #e8f5e9;
+  border-color: #6ac466;
+}
+
+.played-area h3 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  color: #666;
+}
+
+.played-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.rules {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.rules ol {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.rules li {
+  margin-bottom: 8px;
+}
+
+.players-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.players-grid.layout-table {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.player-panel {
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border: 3px solid transparent;
+}
+
+.player-panel.current-player {
+  border-color: #950f08;
+}
+
+.player-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.player-name {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.player-score {
+  font-size: 18px;
+  font-weight: bold;
+  color: #950f08;
+}
+
+.player-hand {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  min-height: 100px;
+}
+
+.card {
+  width: var(--card-w);
+  height: var(--card-h);
+  background: #c7634c;
+  border-radius: 8px;
+  padding: 12px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: var(--card-font);
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  cursor: grab;
+  user-select: none;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+}
+
+.card.dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+.card.played {
+  cursor: pointer;
+}
+
+.card.played:hover {
+  transform: scale(1.05);
+}
+
+.card.winner {
+  animation: winner-pulse 0.6s ease-out;
+}
+
+@keyframes winner-pulse {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   }
-  :root{
-    --bg:#f4f4f5;
-    --board:#e9e7e7;
-    --card-red:#c7634c;
-    --card-green:#6ac466;
-    --card-back:#111;
-    --ink:#1a1a1a;
-    --accent:#950f08;
-    --card-w: 130px;
-    --card-h: 180px;
-    --pile-w: 140px;
-    --pile-h: 190px;
-    --card-font: 14px;
-    --apple-opacity: 1;
+  50% {
+    box-shadow: 0 0 0 4px gold, 0 4px 12px rgba(0,0,0,0.2);
   }
-  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:Calibri,system-ui,-apple-system,Segoe UI,Arial;}
-  header{padding:12px 16px;background:#fff;border-bottom:1px solid #ddd;display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
-  header h1{font-size:18px;margin:0;color:var(--accent);}  
-  header .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  .spacer{flex:1}
-  select,button,a{font:inherit}
-  button{padding:8px 12px;border:1px solid #ccc;border-radius:10px;background:#fff;cursor:pointer;}
-  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-  button:disabled{opacity:.5;cursor:not-allowed}
-  main{display:grid;grid-template-columns:280px 1fr 280px;gap:12px;height:calc(100% - 61px);padding:12px;}
-  .well{background:#fff;border:1px solid #ddd;border-radius:14px;padding:12px;height:100%;overflow:auto;}
-  .stack{display:flex;flex-direction:column;gap:10px;align-items:center}
-  .stack h3{margin:4px 0 0 0;font-size:14px;color:#444}
-  .pile{width:var(--pile-w);height:var(--pile-h);border-radius:16px;position:relative;box-shadow:0 6px 20px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;text-align:center;padding:12px;}
-  .pile.red{background:var(--card-red)}
-  .pile.green{background:var(--card-green)}
-  .pile .count{position:absolute;bottom:8px;right:10px;background:rgba(0,0,0,.25);padding:2px 8px;border-radius:10px;font-size:12px}
-  .board{background:var(--board);border:1px dashed #ccc;border-radius:14px;height:100%;display:grid;grid-template-rows:auto 1fr auto;gap:10px;padding:10px;}
-  .centerRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-  .centerArea{flex:1;min-height:260px;background:#fff;border:1px solid #ddd;border-radius:12px;padding:10px;display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}
-  .centerArea h4{margin:6px 0 0 4px;font-size:14px;color:#666;width:100%}
-  .card{width:var(--card-w);min-height:var(--card-h);border-radius:16px;box-shadow:0 6px 20px rgba(0,0,0,.12);padding:10px;display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;font-weight:600;cursor:grab;user-select:none;position:relative;transform-style:preserve-3d;transition:transform .2s ease;}
-  .card::after{content:"";position:absolute;right:8px;bottom:8px;width:22px;height:22px;opacity:var(--apple-opacity,1);background-image:var(--apple-bg);background-size:contain;background-repeat:no-repeat;pointer-events:none;}
-  .card.red{background:var(--card-red)}
-  .card.green{background:var(--card-green)}
-  .card.back{background:var(--card-back)}
-  .card.flipped{transform:rotateY(180deg)}
-  .card .front,.card .backface{position:absolute;inset:8px;display:flex;align-items:center;justify-content:center;padding:4px;border-radius:10px;backface-visibility:hidden;font-size:var(--card-font);line-height:1.1;text-wrap:pretty;}
-  .card .backface{transform:rotateY(180deg)}
-  .players{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;}
-  .players.table{grid-template-columns:repeat(2,minmax(260px,1fr));}
-  .player{background:#fff;border:1px solid #ddd;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:260px}
-  .playerHeader{display:flex;justify-content:space-between;align-items:center}
-  .score{display:flex;gap:6px;align-items:center}
-  .score button{padding:4px 8px;border-radius:8px}
-  .hand{display:flex;gap:8px;flex-wrap:wrap;min-height:230px}
-  .dropTarget{outline:2px dashed #bbb}
-  .tiny{font-size:12px;color:#666}
-  details{margin-top:6px}
-  a.rules{color:var(--accent);text-decoration:none}
-  .dev{font-size:12px;color:#555;margin-top:8px}
+}
+
+.size-small {
+  --card-w: 100px;
+  --card-h: 130px;
+  --card-font: 11px;
+  --pile-w: 90px;
+  --pile-h: 120px;
+}
+
+.size-large {
+  --card-w: 180px;
+  --card-h: 230px;
+  --card-font: 16px;
+  --pile-w: 150px;
+  --pile-h: 200px;
+}
+
+@media (max-width: 768px) {
+  .board {
+    grid-template-columns: 1fr;
+  }
+  
+  .players-grid {
+    grid-template-columns: 1fr;
+  }
+}
 </style>
-</head>
-<body>
-<header>
-  <h1>Traits to Apples — Local Demo</h1>
-  <div class="controls">
-    <label>Players:
-      <select id="playerCount">
-        <option>3</option><option selected>4</option><option>5</option><option>6</option>
-      </select>
-    </label>
-    <button id="setup">Set up</button>
-    <button id="deal" class="primary" disabled>Deal 7 each</button>
-    <button id="flipGreen" disabled>Flip green</button>
-    <button id="newRound" disabled>New round</button>
-    <span class="spacer"></span>
-    <label>Card size:
-      <select id="sizeControl">
-        <option value="s">Small</option>
-        <option value="m" selected>Medium</option>
-        <option value="l">Large</option>
-      </select>
-    </label>
-    <label>Layout:
-      <select id="layoutControl">
-        <option value="auto" selected>Auto</option>
-        <option value="table">Table (2×2)</option>
-      </select>
-    </label>
-    <label style="display:flex;align-items:center;gap:6px;">
-      <input type="checkbox" id="appleToggle" checked /> Show apple icon
-    </label>
-    <a class="rules" href="#rules">How to play</a>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="header">
+   <h1 id="game-title">Traits to Apples</h1>
+   <div class="controls">
+    <div class="control-group"><label for="player-count">Players:</label> <input type="number" id="player-count" min="3" max="6" value="4">
+    </div>
+    <div class="control-group"><button id="setup-btn">Set up</button>
+    </div>
+    <div class="control-group"><button id="deal-btn">Deal 4 each</button>
+    </div>
+    <div class="control-group"><button id="flip-btn">Flip green</button>
+    </div>
+    <div class="control-group"><button id="new-round-btn">New round</button>
+    </div>
+    <div class="control-group"><label for="card-size">Card size:</label> <select id="card-size"> <option value="small">Small</option> <option value="medium" selected>Medium</option> <option value="large">Large</option> </select>
+    </div>
+    <div class="control-group"><label for="layout-mode">Layout:</label> <select id="layout-mode"> <option value="auto" selected>Auto</option> <option value="table">Table 2×2</option> </select>
+    </div>
+    <div class="control-group"><input type="checkbox" id="apple-toggle" checked> <label for="apple-toggle">Show apple icon</label>
+    </div>
+    <div class="control-group"><a href="#rules" id="instructions-link">How to play</a>
+    </div>
+   </div>
   </div>
-</header>
-
-<main>
-  <aside class="well">
-    <div class="stack">
-      <div id="redPile" class="pile red"><span>Red deck</span><div class="count" id="redCount">0</div></div>
-      <button id="drawToCurrent" disabled>Draw 1 to current player</button>
-      <div class="tiny">Tip: click a red in your hand to flip front/back</div>
-      <details class="dev"><summary>Dev tools</summary>
-        <button id="selfTest">Run self-check</button>
-        <div id="testOut" class="tiny"></div>
-      </details>
+  <div class="board">
+   <div class="column">
+    <h2>Red Deck</h2>
+    <div class="deck-area">
+     <div class="card-pile red" id="red-deck"><span id="red-count">200</span>
+      <div class="apple-icon"></div>
+     </div><button class="draw-btn" id="draw-red-btn">Draw 1 to current player</button>
     </div>
-  </aside>
-
-  <section class="board">
-    <div class="centerRow">
-      <div id="greenPile" class="pile green"><span>Green deck</span><div class="count" id="greenCount">0</div></div>
-      <div id="greenCenter" class="card green" style="display:none;">
-        <div class="front"></div>
-        <div class="backface"></div>
+   </div>
+   <div class="column">
+    <h2>Green Card</h2>
+    <div class="center-area">
+     <div class="deck-area">
+      <div class="card-pile green" id="green-deck"><span id="green-count">23</span>
+       <div class="apple-icon"></div>
       </div>
+     </div>
+     <div class="flipped-card" id="flipped-green" style="display: none;">
+      <h3 id="green-trait"></h3>
+      <p id="green-definition"></p>
+      <div class="apple-icon"></div>
+     </div>
+     <div class="played-area" id="played-area">
+      <h3>Played cards</h3>
+      <div class="played-cards" id="played-cards"></div>
+     </div>
     </div>
-
-    <div>
-      <div class="centerArea" id="centerArea">
-        <h4>Played cards</h4>
-      </div>
+   </div>
+   <div class="column">
+    <h2>Round Controls</h2>
+    <div class="rules" id="rules">
+     <ol>
+      <li>Choose 3–6 players, then <strong>Set up</strong></li>
+      <li>Click <strong>Deal 4 each</strong> to give cards</li>
+      <li>Click <strong>Flip green</strong> to reveal a trait</li>
+      <li>Each player drags one red card to <strong>Played cards</strong></li>
+      <li>Judge clicks a played card to award 1 point</li>
+      <li>Click <strong>New round</strong> to continue</li>
+     </ol>
     </div>
-
-    <div class="players" id="players"></div>
-  </section>
-
-  <aside class="well" id="sidebar">
-    <h3>Round controls</h3>
-    <button id="reveal" disabled>Reveal played cards</button>
-    <details id="rules">
-      <summary>Rules / Notes</summary>
-      <p>1) Click “Set up”, choose players, then “Deal 7 each”.</p>
-      <p>2) Click “Flip green” to show the subtrait for this round.</p>
-      <p>3) Each player drags one red card from their hand to “Played cards”.</p>
-      <p>4) The judge clicks the winning played card to award the point.</p>
-      <p>5) Click “New round” to clear the table and flip a new green.</p>
-      <p>Decks are shuffled at setup. Hands are visible on this local demo (shared screen or pass-the-laptop). For private hands across devices, we’d add a backend later.</p>
-    </details>
-  </aside>
-</main>
-
-<script>
-/*** ---------- Data ---------- ***/
-// Green deck: 23 subtraits + short definitions (from your handout)
+   </div>
+  </div>
+  <div class="players-grid" id="players-grid"></div>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script>
 const GREEN_CARDS = [
-  {name:"Carefree", desc:"Cool with low anxiety"},
-  {name:"Peace", desc:"Slow to feel anger"},
-  {name:"Optimism", desc:"Assumes things will work out well"},
-  {name:"Confidence", desc:"Sure of oneself"},
-  {name:"Composure", desc:"Stays composed; focuses on solutions"},
-  {name:"Assertiveness", desc:"Comfort voicing one’s opinion"},
-  {name:"Taking the Lead", desc:"Enjoys directing or managing others"},
-  {name:"Gregariousness", desc:"Enjoys being with people for long periods"},
-  {name:"Approachability", desc:"Others are easily drawn to the person"},
-  {name:"Energy Level", desc:"Comfort expending a lot of energy"},
-  {name:"Imagination", desc:"Comfort generating ideas"},
-  {name:"Change", desc:"Comfort varying from a routine"},
-  {name:"Viewpoint", desc:"One’s way of thinking"},
-  {name:"Complexity", desc:"Comfort analyzing issues thoroughly"},
-  {name:"Trust", desc:"Belief people are honest with no hidden motives"},
-  {name:"Empathy", desc:"Considers how issues impact people"},
-  {name:"Service", desc:"Takes time for others; puts them first"},
-  {name:"Humility", desc:"Minimizes one’s own contribution"},
-  {name:"Tact", desc:"Chooses words carefully to be respectful"},
-  {name:"Self-Discipline", desc:"Self-restraint and willpower"},
-  {name:"Drive", desc:"Strives to be among the best"},
-  {name:"Organization", desc:"Creates an orderly, structured environment"},
-  {name:"Perfectionism", desc:"Highest quality; absence of errors"}
+  { name: "Carefree", definition: "Free from anxiety or responsibility" },
+  { name: "Peace", definition: "A state of tranquility and calm" },
+  { name: "Optimism", definition: "Hopefulness about the future" },
+  { name: "Confidence", definition: "Belief in one's abilities" },
+  { name: "Composure", definition: "Remaining calm under pressure" },
+  { name: "Assertiveness", definition: "Standing up for oneself" },
+  { name: "Taking the Lead", definition: "Initiating action and guiding others" },
+  { name: "Gregariousness", definition: "Enjoying social interaction" },
+  { name: "Approachability", definition: "Being easy to talk to" },
+  { name: "Energy Level", definition: "Vitality and enthusiasm" },
+  { name: "Imagination", definition: "Creative and inventive thinking" },
+  { name: "Change", definition: "Embracing new experiences" },
+  { name: "Viewpoint", definition: "Unique perspective on life" },
+  { name: "Complexity", definition: "Depth of thought and feeling" },
+  { name: "Trust", definition: "Believing in others' goodness" },
+  { name: "Empathy", definition: "Understanding others' feelings" },
+  { name: "Service", definition: "Helping and supporting others" },
+  { name: "Humility", definition: "Modest view of one's importance" },
+  { name: "Tact", definition: "Sensitivity in dealing with others" },
+  { name: "Self-Discipline", definition: "Control over one's actions" },
+  { name: "Drive", definition: "Motivation to achieve goals" },
+  { name: "Organization", definition: "Systematic and orderly approach" },
+  { name: "Perfectionism", definition: "Striving for flawlessness" }
 ];
 
-// Starter red deck (short; replace with your full 200 later)
 const RED_CARDS = [
-  "A long grocery line","Spilling your coffee","Running late for work","A broken umbrella","A family dinner",
-  "Waiting for the elevator","The morning commute","Finding a parking spot","A surprise visitor","A power outage",
-  "A beach day","Reading in bed","Watching a sunset","Singing in the shower","Playing board games",
-  "A movie marathon","Baking cookies","A road trip","A day at the theme park","Dancing when no one’s watching",
-  "Leading a team meeting","Getting honest feedback","Starting a new project","Asking for help","Finishing before the deadline",
-  "Admitting a mistake","Helping a coworker","Taking the blame","Delegating a task","Leading from behind",
-  "A pineapple on pizza","A mystery text message","Losing your keys","Finding a lucky penny","Talking to plants",
-  "Wearing mismatched socks","Forgetting someone’s name","An awkward silence","Accidentally hitting Reply All","A song stuck in your head",
-  "A missed flight","Traveling light","A rainy vacation","Climbing a mountain","Exploring a new city",
+  "A walk in the park","Watching a football game","A rainy vacation","A beach day","Reading in bed",
+  "Singing in the shower","Playing board games","A movie marathon","Baking cookies","A road trip",
+  "A day at the theme park","Dancing when no one's watching","Finishing before the deadline","Getting honest feedback","Starting a new project",
+  "Asking for help","Admitting a mistake","Helping a coworker","Taking the blame","Delegating a task",
+  "Leading from behind","A pineapple on pizza","A mystery text message","Losing your keys","Finding a lucky penny",
+  "Talking to plants","Wearing mismatched socks","Forgetting someone's name","An awkward silence","Accidentally hitting Reply All",
+  "A song stuck in your head","A missed flight","Traveling light","Climbing a mountain","Exploring a new city",
   "Getting lost","A hotel upgrade","Flying first class","A road trip playlist","Jet lag",
   "Being the center of attention","Avoiding conflict","Laughing too loudly","Saying sorry first","Changing your mind",
-  "Overthinking everything","Taking a big risk","Giving up control","Keeping a secret","Telling the truth"
+  "Overthinking everything","Taking a big risk","Giving up control","Keeping a secret","Telling the truth",
+  "A long grocery line","Spilling your coffee","Running late","Waiting for a text back","A surprise party",
+  "Waking up early","Sleeping in","A power nap","Staying up all night","A morning routine",
+  "Breaking a habit","Starting a new hobby","Quitting something","Trying again","Giving up",
+  "A compliment from a stranger","Constructive criticism","Being ignored","Getting recognized","Blending in",
+  "Standing out","Following the crowd","Going against the grain","Peer pressure","Independence",
+  "A group project","Working alone","Brainstorming ideas","Executing a plan","Improvising",
+  "Sticking to the script","A surprise twist","Predictability","Spontaneity","Routine",
+  "Adventure","Comfort zone","Taking a chance","Playing it safe","A calculated risk",
+  "Blind faith","Skepticism","Curiosity","Indifference","Passion",
+  "Apathy","Enthusiasm","Burnout","Motivation","Procrastination",
+  "Productivity","Multitasking","Focus","Distraction","Flow state",
+  "Writer's block","Creative breakthrough","Practice","Natural talent","Hard work",
+  "Luck","Preparation","Opportunity","Timing","Patience",
+  "Urgency","Waiting","Rushing","Taking your time","Deadlines",
+  "Freedom","Structure","Rules","Flexibility","Compromise",
+  "Stubbornness","Open-mindedness","Tradition","Innovation","Evolution",
+  "Revolution","Stability","Change","Growth","Stagnation",
+  "Progress","Setback","Success","Failure","Learning",
+  "Teaching","Listening","Speaking","Silence","Noise",
+  "Chaos","Order","Balance","Extremes","Moderation",
+  "Excess","Minimalism","Abundance","Scarcity","Gratitude",
+  "Entitlement","Humility","Pride","Shame","Guilt",
+  "Forgiveness","Resentment","Letting go","Holding on","Closure",
+  "Unfinished business","A fresh start","A second chance","Moving on","Looking back",
+  "Nostalgia","Living in the moment","Future planning","Daydreaming","Reality check",
+  "Optimism","Pessimism","Realism","Idealism","Cynicism",
+  "Hope","Despair","Joy","Sadness","Anger",
+  "Fear","Love","Hate","Indifference","Compassion",
+  "Cruelty","Kindness","Generosity","Selfishness","Sacrifice"
 ];
 
-// Utility: shuffle
-function shuffle(arr){
-  const a = arr.slice();
-  for(let i=a.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [a[i],a[j]]=[a[j],a[i]];
-  }
-  return a;
-}
+let redDeck = [...RED_CARDS];
+let greenDeck = [...GREEN_CARDS];
+let players = [];
+let currentPlayerIndex = 0;
+let flippedGreen = null;
+let playedCards = [];
 
-/*** ---------- State ---------- ***/
-let state = {
-  players: [],
-  redDeck: [],
-  greenDeck: [],
-  centerGreen: null,
-  centerPlays: [], // {text, by: playerIndex}
-  currentPlayerIndex: 0
+const defaultConfig = {
+  game_title: "Traits to Apples",
+  instructions_text: "How to play"
 };
 
-function setupGame(nPlayers=4){
-  state.players = Array.from({length:nPlayers}, (_,i)=>({
-    name:`Player ${i+1}`,
-    hand:[],
-    score:0
-  }));
-  state.redDeck = shuffle(RED_CARDS).map(t=>({text:t}));
-  state.greenDeck = shuffle(GREEN_CARDS).map(g=>({name:g.name,desc:g.desc}));
-  state.centerGreen = null;
-  state.centerPlays = [];
-  state.currentPlayerIndex = 0;
-  renderAll();
-  enable(["deal","flipGreen"]);
-  disable(["newRound","reveal","drawToCurrent"]);
-  updateCounts();
-}
-
-function dealAll(n=7){
-  for(let p of state.players){
-    for(let i=0;i<n;i++){
-      if(state.redDeck.length) p.hand.push(state.redDeck.pop());
-    }
+function shuffleArray(array) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
-  renderAll();
-  updateCounts();
-  enable(["flipGreen","newRound","drawToCurrent"]);
+  return shuffled;
 }
 
-function flipGreen(){
-  if(!state.greenDeck.length){ alert("Green deck empty."); return; }
-  state.centerGreen = state.greenDeck.pop();
-  renderCenterGreen();
-  updateCounts();
-}
-
-function newRound(){
-  state.centerPlays = [];
-  renderCenterArea();
-  flipGreen();
-}
-
-function drawToCurrent(){
-  const p = state.players[state.currentPlayerIndex];
-  if(state.redDeck.length){
-    p.hand.push(state.redDeck.pop());
-    renderPlayers();
-    updateCounts();
+function setupGame() {
+  const count = parseInt(document.getElementById('player-count').value);
+  if (count < 3 || count > 6) {
+    showMessage('Please choose 3-6 players');
+    return;
   }
-}
-
-// Rendering
-const playersEl = document.getElementById("players");
-const centerAreaEl = document.getElementById("centerArea");
-const greenCenterEl = document.getElementById("greenCenter");
-
-function renderAll(){
-  renderPlayers();
-  renderCenterGreen();
-  renderCenterArea();
-}
-
-function renderPlayers(){
-  playersEl.innerHTML="";
-  state.players.forEach((p,idx)=>{
-    const div = document.createElement("div");
-    div.className="player";
-    const header = document.createElement("div");
-    header.className="playerHeader";
-    const h4 = document.createElement("h4");
-    h4.textContent = p.name + (idx===state.currentPlayerIndex?" ★":"");
-    const score = document.createElement("div");
-    score.className="score";
-    const minus = document.createElement("button");
-    minus.textContent="-"; minus.onclick=()=>{ if(p.score>0){p.score--; renderPlayers();} };
-    const count = document.createElement("span");
-    count.textContent = `Score: ${p.score}`;
-    const plus = document.createElement("button");
-    plus.textContent="+"; plus.onclick=()=>{ p.score++; renderPlayers(); };
-    score.append(minus,count,plus);
-    header.append(h4,score);
-    const hand = document.createElement("div");
-    hand.className="hand dropTarget";
-    hand.ondragover = e=>e.preventDefault();
-    // build cards
-    p.hand.forEach((c,ci)=>{
-      hand.append(makeRedCard(c.text, true, ()=>{}, {
-        draggable:true,
-        ondragstart:(ev)=> {
-          ev.dataTransfer.setData("text/plain", JSON.stringify({type:"red", by:idx, index:ci}));
-        }
-      }));
+  
+  players = [];
+  for (let i = 0; i < count; i++) {
+    players.push({
+      name: `Player ${i + 1}`,
+      score: 0,
+      hand: []
     });
-    div.append(header,hand);
-    playersEl.append(div);
-  });
-}
-
-function renderCenterGreen(){
-  if(state.centerGreen){
-    greenCenterEl.style.display="";
-    greenCenterEl.querySelector(".front")?.remove();
-    greenCenterEl.querySelector(".backface")?.remove();
-    const front = document.createElement("div");
-    front.className="front";
-    front.innerHTML = `<div><div style="font-size:18px;font-weight:700;">${state.centerGreen.name}</div><div style="margin-top:6px;font-weight:500;">${state.centerGreen.desc}</div></div>`;
-    const back = document.createElement("div");
-    back.className="backface";
-    back.textContent = "Green card";
-    greenCenterEl.append(front,back);
-  }else{
-    greenCenterEl.style.display="none";
   }
-}
-
-function renderCenterArea(){
-  centerAreaEl.innerHTML = '<h4>Played cards</h4>';
-  centerAreaEl.ondragover = e=>e.preventDefault();
-  centerAreaEl.ondrop = e=>{
-    const dataStr = e.dataTransfer.getData("text/plain");
-    if(!dataStr) return;
-    const data = JSON.parse(dataStr);
-    if(data.type==="red"){
-      const p = state.players[data.by];
-      const card = p.hand.splice(data.index,1)[0];
-      state.centerPlays.push({text:card.text, by:data.by});
-      renderPlayers();
-      renderCenterArea();
-    }
-  };
-  state.centerPlays.forEach((pl,i)=>{
-    const card = makeRedCard(pl.text, true, null, {clickToAward:true, award:()=>awardPoint(i)});
-    centerAreaEl.append(card);
-  });
-}
-
-function awardPoint(centerIndex){
-  const play = state.centerPlays[centerIndex];
-  const p = state.players[play.by];
-  p.score++;
-  // highlight the winning card briefly
-  const kids = Array.from(centerAreaEl.children).filter(el=>el.classList.contains("card"));
-  if(kids[centerIndex]){
-    kids[centerIndex].style.outline="4px solid gold";
-    setTimeout(()=>{kids[centerIndex].style.outline="";}, 800);
-  }
+  
+  currentPlayerIndex = 0;
+  redDeck = shuffleArray(RED_CARDS);
+  greenDeck = shuffleArray(GREEN_CARDS);
+  flippedGreen = null;
+  playedCards = [];
+  
   renderPlayers();
+  updateDeckCounts();
+  clearFlippedGreen();
+  clearPlayedCards();
+  showMessage('Game set up! Click "Deal 4 each" to start');
 }
 
-function makeRedCard(text, faceUp=true, onFlip=null, opts={}){
-  const el = document.createElement("div");
-  el.className = "card red";
-  el.draggable = !!opts.draggable;
-  if(opts.ondragstart) el.ondragstart = opts.ondragstart;
-  if(opts.clickToAward) el.onclick = opts.award;
-  const front = document.createElement("div");
-  const back  = document.createElement("div");
-  front.className="front"; back.className="backface";
-  front.textContent=text;
-  back.textContent="Red card";
-  el.append(front,back);
-  // flip on double-click for now (visual)
-  el.addEventListener("dblclick", ()=>{
-    el.classList.toggle("flipped");
-    if(onFlip) onFlip();
-  });
-  return el;
-}
-
-function updateCounts(){
-  document.getElementById("redCount").textContent = state.redDeck.length;
-  document.getElementById("greenCount").textContent = state.greenDeck.length;
-}
-
-/*** ---------- Wire up controls (single declarations) ---------- ***/
-const $ = sel=>document.querySelector(sel);
-function enable(ids){ ids.forEach(id=>$( '#'+id ).disabled=false ); }
-function disable(ids){ ids.forEach(id=>$( '#'+id ).disabled=true ); }
-
-$('#setup').onclick = ()=>{
-  const n = parseInt($('#playerCount').value,10);
-  setupGame(n);
-};
-$('#deal').onclick = ()=>dealAll(7);
-$('#flipGreen').onclick = ()=>flipGreen();
-$('#newRound').onclick = ()=>newRound();
-$('#drawToCurrent').onclick = ()=>drawToCurrent();
-
-// --- Size control (single instance) ---
-const sizeControl = document.getElementById('sizeControl');
-function applySize(sz){
-  const r = document.documentElement;
-  if(sz==='s'){
-    r.style.setProperty('--card-w','110px');
-    r.style.setProperty('--card-h','160px');
-    r.style.setProperty('--pile-w','120px');
-    r.style.setProperty('--pile-h','170px');
-    r.style.setProperty('--card-font','12px');
-  }else if(sz==='l'){
-    r.style.setProperty('--card-w','170px');
-    r.style.setProperty('--card-h','230px');
-    r.style.setProperty('--pile-w','180px');
-    r.style.setProperty('--pile-h','240px');
-    r.style.setProperty('--card-font','16px');
-  }else{
-    r.style.setProperty('--card-w','130px');
-    r.style.setProperty('--card-h','180px');
-    r.style.setProperty('--pile-w','140px');
-    r.style.setProperty('--pile-h','190px');
-    r.style.setProperty('--card-font','14px');
+function dealCards() {
+  if (players.length === 0) {
+    showMessage('Please set up the game first');
+    return;
   }
+  
+  for (let player of players) {
+    while (player.hand.length < 4 && redDeck.length > 0) {
+      player.hand.push(redDeck.pop());
+    }
+  }
+  
+  renderPlayers();
+  updateDeckCounts();
+  showMessage('Cards dealt! Click "Flip green" to reveal a trait');
 }
-sizeControl.addEventListener('change', e=>applySize(e.target.value));
-applySize('m');
 
-// --- Layout control (single instance) ---
-const layoutControl = document.getElementById('layoutControl');
-function applyLayout(mode){
-  const playersEl = document.getElementById('players');
-  playersEl.classList.toggle('table', mode==='table');
+function flipGreen() {
+  if (greenDeck.length === 0) {
+    showMessage('No more green cards!');
+    return;
+  }
+  
+  flippedGreen = greenDeck.pop();
+  document.getElementById('green-trait').textContent = flippedGreen.name;
+  document.getElementById('green-definition').textContent = flippedGreen.definition;
+  document.getElementById('flipped-green').style.display = 'block';
+  updateDeckCounts();
+  showMessage('Green card flipped! Players, play your cards');
 }
-layoutControl.addEventListener('change', e=>applyLayout(e.target.value));
-applyLayout('auto');
 
-// --- Apple icon toggle + SVG setup (single instance) ---
-const appleToggle = document.getElementById('appleToggle');
-function applyAppleIcon(show){
-  document.documentElement.style.setProperty('--apple-opacity', show? '1' : '0');
+function newRound() {
+  clearPlayedCards();
+  clearFlippedGreen();
+  currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+  renderPlayers();
+  showMessage('New round! Click "Flip green" when ready');
 }
-appleToggle.addEventListener('change', e=>applyAppleIcon(e.target.checked));
-applyAppleIcon(true);
-// Provide a percent-encoded inline SVG so it renders reliably in all browsers
-const appleSVG = "url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M16 3c-1.5 0-3 1-4 2-1-1-2.5-2-4-2 0 3 2 5 4 5s4-2 4-5z%22/%3E%3Cpath d=%22M19 10c0 5-3 9-7 9s-7-4-7-9c0-2.5 2-4 4-4 1.5 0 2.5.5 3 1 .5-.5 1.5-1 3-1 2 0 4 1.5 4 4z%22/%3E%3C/svg%3E')";
-document.documentElement.style.setProperty('--apple-bg', appleSVG);
 
-/*** ---------- Self-tests ---------- ***/
-document.getElementById('selfTest').addEventListener('click', ()=>{
-  const out = document.getElementById('testOut');
-  const ids = ['sizeControl','layoutControl','appleToggle','players','centerArea','greenCenter'];
-  const missing = ids.filter(id=>!document.getElementById(id));
-  const duplicatesOK = (new Set(ids)).size === ids.length; // trivial sanity
-  let pass = missing.length===0 && duplicatesOK;
-  out.textContent = pass ? 'Self-check passed: controls present; no duplicate ids in test set.' : 'Issues: missing -> '+missing.join(', ');
+function drawRedCard() {
+  if (players.length === 0) {
+    showMessage('Please set up the game first');
+    return;
+  }
+  
+  if (redDeck.length === 0) {
+    showMessage('Red deck is empty!');
+    return;
+  }
+  
+  players[currentPlayerIndex].hand.push(redDeck.pop());
+  renderPlayers();
+  updateDeckCounts();
+}
+
+function clearFlippedGreen() {
+  document.getElementById('flipped-green').style.display = 'none';
+  flippedGreen = null;
+}
+
+function clearPlayedCards() {
+  playedCards = [];
+  document.getElementById('played-cards').innerHTML = '';
+}
+
+function updateDeckCounts() {
+  document.getElementById('red-count').textContent = redDeck.length;
+  document.getElementById('green-count').textContent = greenDeck.length;
+}
+
+function renderPlayers() {
+  const grid = document.getElementById('players-grid');
+  grid.innerHTML = '';
+  
+  players.forEach((player, index) => {
+    const panel = document.createElement('div');
+    panel.className = 'player-panel';
+    if (index === currentPlayerIndex) {
+      panel.classList.add('current-player');
+    }
+    
+    const header = document.createElement('div');
+    header.className = 'player-header';
+    
+    const name = document.createElement('div');
+    name.className = 'player-name';
+    name.textContent = index === currentPlayerIndex ? `★ ${player.name}` : player.name;
+    
+    const score = document.createElement('div');
+    score.className = 'player-score';
+    score.textContent = player.score;
+    
+    header.appendChild(name);
+    header.appendChild(score);
+    
+    const hand = document.createElement('div');
+    hand.className = 'player-hand';
+    hand.dataset.playerIndex = index;
+    
+    player.hand.forEach((cardText, cardIndex) => {
+      const card = createCard(cardText, index, cardIndex);
+      hand.appendChild(card);
+    });
+    
+    panel.appendChild(header);
+    panel.appendChild(hand);
+    grid.appendChild(panel);
+  });
+}
+
+function createCard(text, playerIndex, cardIndex) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.textContent = text;
+  card.draggable = true;
+  card.dataset.playerIndex = playerIndex;
+  card.dataset.cardIndex = cardIndex;
+  card.dataset.cardText = text;
+  
+  const appleIcon = document.createElement('div');
+  appleIcon.className = 'apple-icon';
+  card.appendChild(appleIcon);
+  
+  card.addEventListener('dragstart', handleDragStart);
+  card.addEventListener('dragend', handleDragEnd);
+  
+  return card;
+}
+
+function handleDragStart(e) {
+  e.target.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', JSON.stringify({
+    playerIndex: e.target.dataset.playerIndex,
+    cardIndex: e.target.dataset.cardIndex,
+    cardText: e.target.dataset.cardText
+  }));
+}
+
+function handleDragEnd(e) {
+  e.target.classList.remove('dragging');
+}
+
+function showMessage(msg) {
+  const rulesDiv = document.getElementById('rules');
+  const existingMsg = rulesDiv.querySelector('.message');
+  if (existingMsg) {
+    existingMsg.remove();
+  }
+  
+  const message = document.createElement('div');
+  message.className = 'message';
+  message.style.cssText = 'background: #e8f5e9; padding: 12px; border-radius: 4px; margin-bottom: 12px; font-weight: 600; color: #2e7d32;';
+  message.textContent = msg;
+  rulesDiv.insertBefore(message, rulesDiv.firstChild);
+  
+  setTimeout(() => message.remove(), 3000);
+}
+
+const playedArea = document.getElementById('played-area');
+const playedCardsContainer = document.getElementById('played-cards');
+
+playedArea.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  playedArea.classList.add('drag-over');
 });
+
+playedArea.addEventListener('dragleave', () => {
+  playedArea.classList.remove('drag-over');
+});
+
+playedArea.addEventListener('drop', (e) => {
+  e.preventDefault();
+  playedArea.classList.remove('drag-over');
+  
+  const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+  const playerIndex = parseInt(data.playerIndex);
+  const cardIndex = parseInt(data.cardIndex);
+  const cardText = data.cardText;
+  
+  players[playerIndex].hand.splice(cardIndex, 1);
+  
+  playedCards.push({
+    text: cardText,
+    playerIndex: playerIndex
+  });
+  
+  const playedCard = document.createElement('div');
+  playedCard.className = 'card played';
+  playedCard.textContent = cardText;
+  playedCard.dataset.playedIndex = playedCards.length - 1;
+  
+  const appleIcon = document.createElement('div');
+  appleIcon.className = 'apple-icon';
+  playedCard.appendChild(appleIcon);
+  
+  playedCard.addEventListener('click', handlePlayedCardClick);
+  
+  playedCardsContainer.appendChild(playedCard);
+  renderPlayers();
+});
+
+function handlePlayedCardClick(e) {
+  const playedIndex = parseInt(e.currentTarget.dataset.playedIndex);
+  const playedCard = playedCards[playedIndex];
+  
+  players[playedCard.playerIndex].score++;
+  
+  e.currentTarget.classList.add('winner');
+  
+  setTimeout(() => {
+    e.currentTarget.classList.remove('winner');
+  }, 600);
+  
+  renderPlayers();
+  showMessage(`${players[playedCard.playerIndex].name} wins this round!`);
+}
+
+document.getElementById('setup-btn').addEventListener('click', setupGame);
+document.getElementById('deal-btn').addEventListener('click', dealCards);
+document.getElementById('flip-btn').addEventListener('click', flipGreen);
+document.getElementById('new-round-btn').addEventListener('click', newRound);
+document.getElementById('draw-red-btn').addEventListener('click', drawRedCard);
+
+document.getElementById('card-size').addEventListener('change', (e) => {
+  document.body.className = `size-${e.target.value}`;
+});
+
+document.getElementById('layout-mode').addEventListener('change', (e) => {
+  const grid = document.getElementById('players-grid');
+  if (e.target.value === 'table') {
+    grid.classList.add('layout-table');
+  } else {
+    grid.classList.remove('layout-table');
+  }
+});
+
+document.getElementById('apple-toggle').addEventListener('change', (e) => {
+  if (e.target.checked) {
+    document.body.classList.remove('hide-apple');
+  } else {
+    document.body.classList.add('hide-apple');
+  }
+});
+
+async function onConfigChange(config) {
+  const titleElement = document.getElementById('game-title');
+  const instructionsElement = document.getElementById('instructions-link');
+  
+  titleElement.textContent = config.game_title || defaultConfig.game_title;
+  instructionsElement.textContent = config.instructions_text || defaultConfig.instructions_text;
+}
+
+if (window.elementSdk) {
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange,
+    mapToCapabilities: (config) => ({
+      recolorables: [],
+      borderables: [],
+      fontEditable: undefined,
+      fontSizeable: undefined
+    }),
+    mapToEditPanelValues: (config) => new Map([
+      ["game_title", config.game_title || defaultConfig.game_title],
+      ["instructions_text", config.instructions_text || defaultConfig.instructions_text]
+    ])
+  });
+}
 </script>
-</body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'997d033482145c6d',t:'MTc2MjAxNzA5OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
