@@ -171,8 +171,8 @@ html, body {
   right: 8px;
   width: 18px;
   height: 18px;
-  background: white;
-  border: 2px solid rgba(0,0,0,0.3);
+  background: transparent;
+  border: 2px solid rgba(255,255,255,0.9);
   border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
   opacity: 0.95;
 }
@@ -184,10 +184,25 @@ html, body {
   right: 6px;
   width: 4px;
   height: 8px;
-  background: white;
-  border: 1px solid rgba(0,0,0,0.3);
+  background: transparent;
+  border: 2px solid rgba(255,255,255,0.9);
+  border-bottom: none;
   border-radius: 50% 50% 0 0;
   transform: rotate(20deg);
+}
+
+.apple-icon::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  right: 4px;
+  width: 6px;
+  height: 4px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.9);
+  border-bottom: none;
+  border-radius: 50% 50% 0 0;
+  transform: rotate(-30deg);
 }
 
 .hide-apple .apple-icon {
@@ -311,9 +326,42 @@ html, body {
 }
 
 .player-score {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.score-btn {
+  width: 28px;
+  height: 28px;
+  border: 2px solid #950f08;
+  background: white;
+  color: #950f08;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.score-btn:hover {
+  background: #950f08;
+  color: white;
+}
+
+.score-btn:active {
+  transform: scale(0.95);
+}
+
+.score-value {
   font-size: 18px;
   font-weight: bold;
   color: #950f08;
+  min-width: 24px;
+  text-align: center;
 }
 
 .player-hand {
@@ -681,7 +729,24 @@ function renderPlayers() {
     
     const score = document.createElement('div');
     score.className = 'player-score';
-    score.textContent = player.score;
+    
+    const minusBtn = document.createElement('button');
+    minusBtn.className = 'score-btn minus';
+    minusBtn.textContent = '−';
+    minusBtn.onclick = () => adjustScore(index, -1);
+    
+    const scoreValue = document.createElement('span');
+    scoreValue.className = 'score-value';
+    scoreValue.textContent = player.score;
+    
+    const plusBtn = document.createElement('button');
+    plusBtn.className = 'score-btn plus';
+    plusBtn.textContent = '+';
+    plusBtn.onclick = () => adjustScore(index, 1);
+    
+    score.appendChild(minusBtn);
+    score.appendChild(scoreValue);
+    score.appendChild(plusBtn);
     
     header.appendChild(name);
     header.appendChild(score);
@@ -810,6 +875,13 @@ function handlePlayedCardClick(e) {
   showMessage(`${players[playedCard.playerIndex].name} wins this round!`);
 }
 
+function adjustScore(playerIndex, change) {
+  if (players[playerIndex]) {
+    players[playerIndex].score = Math.max(0, players[playerIndex].score + change);
+    renderPlayers();
+  }
+}
+
 document.getElementById('setup-btn').addEventListener('click', setupGame);
 document.getElementById('deal-btn').addEventListener('click', dealCards);
 document.getElementById('flip-btn').addEventListener('click', flipGreen);
@@ -862,5 +934,5 @@ if (window.elementSdk) {
   });
 }
 </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'997d033482145c6d',t:'MTc2MjAxNzA5OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'997d10c2b60a4f2a',t:'MTc2MjAxNzY1NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
